@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Cashbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md">
+        <h1 class="text-2xl font-bold mb-4 text-center">Cashbook</h1>
+        
+        <div class="bg-blue-600 text-white p-4 rounded-lg mb-6 text-center">
+            <p class="text-sm">Total Balance</p>
+            <h2 id="balance" class="text-3xl font-bold">$0.00</h2>
+        </div>
+
+        <div class="space-y-3">
+            <input type="text" id="desc" placeholder="Description" class="w-full p-2 border rounded">
+            <input type="number" id="amount" placeholder="Amount" class="w-full p-2 border rounded">
+            <select id="type" class="w-full p-2 border rounded">
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+            </select>
+            <button onclick="addEntry()" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 font-bold">Add Entry</button>
+        </div>
+
+        <div class="mt-6">
+            <h3 class="font-semibold mb-2">Transactions</h3>
+            <ul id="list" class="space-y-2"></ul>
+        </div>
+    </div>
+
+    <script>
+        let transactions = JSON.parse(localStorage.getItem('cashbook')) || [];
+
+        function updateUI() {
+            const list = document.getElementById('list');
+            const balanceEl = document.getElementById('balance');
+            list.innerHTML = '';
+            let total = 0;
+
+            transactions.forEach((t, index) => {
+                total += t.type === 'income' ? parseFloat(t.amount) : -parseFloat(t.amount);
+                const li = document.createElement('li');
+                li.className = `flex justify-between p-2 rounded ${t.type === 'income' ? 'bg-green-50' : 'bg-red-50'}`;
+                li.innerHTML = `<span>${t.desc}</span> 
+                                <span class="font-bold">${t.type === 'income' ? '+' : '-'}$${t.amount}</span>
+                                <button onclick="deleteEntry(${index})" class="text-red-500 font-bold">X</button>`;
+                list.appendChild(li);
+            });
+
+            balanceEl.innerText = `$${total.toFixed(2)}`;
+            localStorage.setItem('cashbook', JSON.stringify(transactions));
+        }
+
+        function addEntry() {
+            const desc = document.getElementById('desc').value;
+            const amount = document.getElementById('amount').value;
+            const type = document.getElementById('type').value;
+
+            if (desc && amount) {
+                transactions.push({ desc, amount, type });
+                updateUI();
+                document.getElementById('desc').value = '';
+                document.getElementById('amount').value = '';
+            }
+        }
+
+        function deleteEntry(index) {
+            transactions.splice(index, 1);
+            updateUI();
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
